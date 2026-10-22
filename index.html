@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Intelligent Traffic Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background: #eceff1; padding: 20px; }
+        .alert { background: #ffcdd2; color: #b71c1c; padding: 15px; margin-bottom: 20px; border-radius: 4px; display: none; }
+        .advisory { background: #bbdefb; color: #0d47a1; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .analytics { display: flex; gap: 15px; margin-bottom: 20px; }
+        .card { flex: 1; background: white; padding: 15px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; }
+        .filter-box { margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { border: 1px solid #cfd8dc; padding: 12px; text-align: left; }
+        th { background: #37474f; color: white; }
+        .Critical { background: #ff8a80; }
+        .High { background: #ffd180; }
+        .Moderate { background: #ffff8d; }
+        .Low { background: #b9f6ca; }
+    </style>
+</head>
+<body>
+    <h1>🚦 Traffic Management & Urban Congestion System</h1>
+    <div id="wait-alert" class="alert">⚠️ ALERT: Vehicle waiting time exceeds 120 seconds!</div>
+    <div class="advisory"><strong>Traffic Diversions & Advisories:</strong> <span id="adv-text"></span></div>
+    
+    <div class="analytics">
+        <div class="card"><h3>Total Vehicles</h3><p id="total-v">0</p></div>
+        <div class="card"><h3>Most Congested</h3><p id="most-c">-</p></div>
+        <div class="card"><h3>Suggested Timing Adjustment</h3><p id="timing-adj">Normal Controls</p></div>
+    </div>
+
+    <div class="filter-box">
+        <label><strong>Filter Congestion Level:</strong> </label>
+        <select id="level-filter" onchange="renderDashboard()">
+            <option value="All">All Statuses</option>
+            <option value="Low">Low</option>
+            <option value="Moderate">Moderate</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+        </select>
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>ID</th><th>Location</th><th>Vehicles</th><th>Wait Time</th><th>Signal Status</th><th>Congestion Level</th></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+
+    <script>
+        const intersections = [
+            { id: "INT-01", location: "Downtown & 5th", vehicles: 150, waitTime: 140, signal: "Red", congestion: "Critical", advisory: "Divert traffic down 3rd St due to high vehicle concentration.", closure: false },
+            { id: "INT-02", location: "North Ring Rd", vehicles: 95, waitTime: 110, signal: "Green", congestion: "High", advisory: "Route 4 Closed for expansion. Divert to Ring lane.", closure: true },
+            { id: "INT-03", location: "Westside Hwy", vehicles: 35, waitTime: 40, signal: "Green", congestion: "Low", advisory: "Clear flow.", closure: false },
+            { id: "INT-04", location: "Market Square", vehicles: 125, waitTime: 130, signal: "Red", congestion: "Critical", advisory: "Emergency Lane Priority active on cross route.", closure: false },
+            { id: "INT-05", location: "Industrial Pass", vehicles: 60, waitTime: 55, signal: "Yellow", congestion: "Moderate", advisory: "Standard flow patterns.", closure: false }
+        ];
+
+        function renderDashboard() {
+            const filter = document.getElementById("level-filter").value;
+            let bodyHtml = "";
+            let totalVehicles = 0;
+            let maxVehicles = 0;
+            let peakLocation = "";
+            let alertActive = false;
+            let advisories = [];
+
+            intersections.forEach(i => {
+                totalVehicles += i.vehicles;
+                if(i.vehicles > maxVehicles) {
+                    maxVehicles = i.vehicles;
+                    peakLocation = i.location;
+                }
+                if(i.waitTime > 120) alertActive = true;
+                if(i.closure || i.congestion === "Critical") {
+                    advisories.push(`[${i.id} - ${i.location}] Status: ${i.closure ? 'CLOSED' : 'OPEN'} | Message: ${i.advisory}`);
+                }
+
+                if(filter === "All" || i.congestion === filter) {
+                    bodyHtml += `<tr class="${i.congestion}">
+                        <td>${i.id}</td><td>${i.location}</td><td>${i.vehicles}</td><td>${i.waitTime}s</td><td>${i.signal}</td><td>${i.congestion}</td>
+                    </tr>`;
+                }
+            });
+
+            document.getElementById("table-body").innerHTML = bodyHtml;
+            document.getElementById("total-v").innerText = totalVehicles;
+            document.getElementById("most-c").innerText = peakLocation;
+            document.getElementById("timing-adj").innerText = maxVehicles > 130 ? "Extend Peak Green Phases by 40s" : "Apply Uniform Smart Cycles";
+            if(alertActive) document.getElementById("wait-alert").style.display = "block";
+            document.getElementById("adv-text").innerText = advisories.join(" || ");
+        }
+
+        renderDashboard();
+    </script>
+</body>
+</htm
